@@ -17,27 +17,31 @@ namespace FuseeApp
 {
     [FuseeApplication(Name = "Tut08_FirstSteps", Description = "Yet another FUSEE App.")]
     public class Tut08_FirstSteps : RenderCanvas
-    {
+    { 
+        private float _camAngle = 0;
+        private Cube[] cubes;
+
+        private int arrsize = 5;
+        private Random rnd = new Random();
+
         // Init is called on startup. 
         public override void Init()
         {
             
-            RC.ClearColor = (float4) ColorUint.DarkBlue;
-            _cubeTransform = new Transform {Translation = new float3(0, 0, 0)};
-            var cubeShader = MakeEffect.FromDiffuseSpecular((float4)ColorUint.Blue, float4.Zero);
-            var cubeMesh = SimpleMeshes.CreateCuboid(new float3(10, 10, 10));
-        
-            // Assemble the cube node containing the three components
-            var cubeNode = new SceneNode();
-            cubeNode.Components.Add(_cubeTransform);
-            cubeNode.Components.Add(cubeShader);
-            cubeNode.Components.Add(cubeMesh);
-
-            // Create the scene containing the cube as the only object
+             RC.ClearColor = (float4) ColorUint.DarkGreen;
             _scene = new SceneContainer();
-            _scene.Children.Add(cubeNode);
 
-            // Create a scene renderer holding the scene above
+            cubes = new Cube[arrsize];
+            var maxsize = 5;
+            var prevy = -maxsize * arrsize + maxsize*1.5f;
+            for (var i = 0; i < arrsize; i++){
+                float edgelength = (i+1) * ((float) maxsize/arrsize);
+                float3 size = new float3(edgelength);
+                var newcube = new Cube(new float3(1,1,1), new float3(0,prevy + 2 * size.y,0), (float4)ColorUint.Blue, size, edgelength);
+                cubes[i] = newcube;
+                _scene.Children.Add(cubes[i].node);
+                prevy = (int) newcube.trans.Translation.y;
+            }
             _sceneRenderer = new SceneRendererForward(_scene);
         }
 
@@ -45,13 +49,20 @@ namespace FuseeApp
         public override void RenderAFrame()
         {
             SetProjectionAndViewport();
-
-            // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
-            _sceneRenderer.Render(RC);
+            for (var i = 0; i < cubes.Length; i++){
+                float4 rgb = HSLtoRGB(Time.TimeSinceStart * 180 + i * 360/arrsize, 1f, 0.5f);
+                cubes[i].changeColor(rgb);
 
-            // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
+                cubes[i].rotate((45f * M.Pi/180f) * Time.DeltaTime);
+                cubes[i].setTranslate((float) Math.Cos(2 * Time.TimeSinceStart) * cubes[i].size * 3);
+                cubes[i].setScale(Math.Abs(cubes[i].trans.Translation.x) / (cubes[i].size * 3));
+            }
+            
+            RC.View = float4x4.CreateTranslation(0, 0, 50) * float4x4.CreateRotationY(_camAngle);
+
+            _sceneRenderer.Render(RC);
             Present();
         }
 
