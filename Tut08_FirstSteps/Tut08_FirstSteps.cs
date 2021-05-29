@@ -37,7 +37,7 @@ namespace FuseeApp
             for (var i = 0; i < 3; i++){
                 float edgelength = (i+1) * randomized(1, 3);
                 float3 size = new float3(edgelength);
-                var newcube = new Cube(new float3(1,1,1), new float3(0,randomized(0, 7),0), (float4)ColorUint.Blue, size, edgelength);
+                var newcube = new Cube(new float3(1,1,1), new float3(0,randomized(0, 7),0), (float4)ColorUint.Yellow, size, edgelength);
                 cubes[i] = newcube;
                 _scene.Children.Add(cubes[i].cubeNode);
 
