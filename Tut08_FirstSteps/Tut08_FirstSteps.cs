@@ -21,27 +21,19 @@ namespace FuseeApp
         private float _camAngle = 0;
         private Cube[] cubes;
 
-        private int arrsize = 5;
-        private Random rnd = new Random();
+        private SceneContainer _scene;
+        private SceneRendererForward _sceneRenderer;
 
         // Init is called on startup. 
         public override void Init()
         {
             
-             RC.ClearColor = (float4) ColorUint.DarkGreen;
+            RC.ClearColor = (float4) ColorUint.DarkGreen;
+                        
             _scene = new SceneContainer();
+            
 
-            cubes = new Cube[arrsize];
-            var maxsize = 5;
-            var prevy = -maxsize * arrsize + maxsize*1.5f;
-            for (var i = 0; i < arrsize; i++){
-                float edgelength = (i+1) * ((float) maxsize/arrsize);
-                float3 size = new float3(edgelength);
-                var newcube = new Cube(new float3(1,1,1), new float3(0,prevy + 2 * size.y,0), (float4)ColorUint.Blue, size, edgelength);
-                cubes[i] = newcube;
-                _scene.Children.Add(cubes[i].node);
-                prevy = (int) newcube.trans.Translation.y;
-            }
+
             _sceneRenderer = new SceneRendererForward(_scene);
         }
 
@@ -49,37 +41,68 @@ namespace FuseeApp
         public override void RenderAFrame()
         {
             SetProjectionAndViewport();
+
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
-            for (var i = 0; i < cubes.Length; i++){
-                float4 rgb = HSLtoRGB(Time.TimeSinceStart * 180 + i * 360/arrsize, 1f, 0.5f);
-                cubes[i].changeColor(rgb);
-
-                cubes[i].rotate((45f * M.Pi/180f) * Time.DeltaTime);
-                cubes[i].setTranslate((float) Math.Cos(2 * Time.TimeSinceStart) * cubes[i].size * 3);
-                cubes[i].setScale(Math.Abs(cubes[i].trans.Translation.x) / (cubes[i].size * 3));
-            }
+            _camAngle = _camAngle + 90.0f * M.Pi/180.0f * DeltaTime;
             
+
+
+
             RC.View = float4x4.CreateTranslation(0, 0, 50) * float4x4.CreateRotationY(_camAngle);
+            Diagnistics.Log(_camAngle);
 
             _sceneRenderer.Render(RC);
+
             Present();
         }
 
         public void SetProjectionAndViewport()
         {
-            // Set the rendering area to the entire window size
             RC.Viewport(0, 0, Width, Height);
 
-            // Create a new projection matrix generating undistorted images on the new aspect ratio.
             var aspectRatio = Width / (float)Height;
 
-            // 0.25*PI Rad -> 45° Opening angle along the vertical direction. Horizontal opening angle is calculated based on the aspect ratio
-            // Front clipping happens at 1 (Objects nearer than 1 world unit get clipped)
-            // Back clipping happens at 2000 (Anything further away from the camera than 2000 world units gets clipped, polygons will be cut)
             var projection = float4x4.CreatePerspectiveFieldOfView(M.PiOver4, aspectRatio, 1, 20000);
             RC.Projection = projection;
         }        
 
+        public class Cube {
+
+            public Transform cubeTransform;
+            public Mesh cubeMesh;
+            public Fusee.Engine.Core.Effects.DefaultSurfaceEffect cubeShader;
+            public SceneNode cubeNode;
+
+            public float size;
+
+            public Cube(float3 _scale, float3 _translate, float4 _color, float3 _dims, float _size) {
+                this.cubeTransform = new Transform{Scale = _scale, Translation = _translate};
+                this.cubeMesh = SimpleMeshes.CreateCuboid(_dims);
+                this.cubeShader = MakeEffect.FromDiffuseSpecular(_color, float4.Zero);
+                this.cubeNode = new SceneNode();
+                this.cubeNode.Components.Add(this.cubeTransform);
+                this.cubeNode.Components.Add(this.cubeShader);
+                this.cubeNode.Components.Add(this.cubeMesh);
+                this.size = _size;
+            }
+
+            public void changeColor(float4 _newcol) {
+                this.cubeShader.SurfaceInput.Albedo = _newcol;
+            }
+
+            public void rotateCube(float _angle) {
+                this.cubeTransform.Rotation.y += _angle;
+            }
+
+            public void setTranslate(float _x) {
+                this.cubeTransform.Translation.x = _x;
+            }
+
+            public void setScale(float _scale) {
+                this.cubeTransform.Scale.x = _scale;
+            }
+        
+        }
     }
 }
