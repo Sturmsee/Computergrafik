@@ -19,7 +19,8 @@ namespace FuseeApp
     public class Tut08_FirstSteps : RenderCanvas
     { 
         private float _camAngle = 0;
-        private Cube[] cubes;
+        private Cube[] cubes = new Cube[3];
+        private Random rnd = new Random();
 
         private SceneContainer _scene;
         private SceneRendererForward _sceneRenderer;
@@ -32,16 +33,16 @@ namespace FuseeApp
                         
             _scene = new SceneContainer();
 
-            cubes = new Cubes[3];
             
             for (var i = 0; i < 3; i++){
                 float edgelength = (i+1) * randomized(1, 3);
                 float3 size = new float3(edgelength);
-                var newcube = new Cube(new float3(1,1,1), new float3(0,randomized(0, 7),0), (float4)ColorUnit.Blue, size, edgelength);
+                var newcube = new Cube(new float3(1,1,1), new float3(0,randomized(0, 7),0), (float4)ColorUint.Blue, size, edgelength);
                 cubes[i] = newcube;
                 _scene.Children.Add(cubes[i].cubeNode);
 
             _sceneRenderer = new SceneRendererForward(_scene);
+            }
         }
 
         // RenderAFrame is called once a frame
@@ -55,14 +56,13 @@ namespace FuseeApp
             
             for (var i = 0; i < cubes.Length; i++){
 
-                cubes[i].rotate((45f * M.Pi/180f) * Time.DeltaTime);
+                cubes[i].rotateCube((45f * M.Pi/180f) * Time.DeltaTime);
                 cubes[i].setTranslate((float) Math.Cos(2 * Time.TimeSinceStart) * cubes[i].size * 3);
-                cubes[i].setScale(Math.Abs(cubes[i].trans.Translation.x) / (cubes[i].size * 3));
+                cubes[i].setScale(Math.Abs(cubes[i].cubeTransform.Translation.x) / (cubes[i].size * 3));
             }
 
 
             RC.View = float4x4.CreateTranslation(0, 0, 50) * float4x4.CreateRotationY(_camAngle);
-            Diagnistics.Log(_camAngle);
 
             _sceneRenderer.Render(RC);
 
@@ -79,46 +79,45 @@ namespace FuseeApp
             RC.Projection = projection;
         }
 
-        public float randomized(float _num, float _num2) {
-            return Math.Round(random.Next(_num, _num2));
+        public float randomized(int _num, int _num2) {
+            return rnd.Next(_num, _num2);
         }        
 
-        public class Cube {
+    }
 
-            public Transform cubeTransform;
-            public Mesh cubeMesh;
-            public Fusee.Engine.Core.Effects.DefaultSurfaceEffect cubeShader;
-            public SceneNode cubeNode;
+    public class Cube {
 
-            public float size;
+        public Transform cubeTransform;
+        public Mesh cubeMesh;
+        public Fusee.Engine.Core.Effects.DefaultSurfaceEffect cubeShader;
+        public SceneNode cubeNode;
 
-            public Cube(float3 _scale, float3 _translate, float4 _color, float3 _dims, float _size) {
-                this.cubeTransform = new Transform{Scale = _scale, Translation = _translate};
-                this.cubeMesh = SimpleMeshes.CreateCuboid(_dims);
-                this.cubeShader = MakeEffect.FromDiffuseSpecular(_color, float4.Zero);
-                this.cubeNode = new SceneNode();
-                this.cubeNode.Components.Add(this.cubeTransform);
-                this.cubeNode.Components.Add(this.cubeShader);
-                this.cubeNode.Components.Add(this.cubeMesh);
-                this.size = _size;
-            }
+        public float size;
 
-            public void changeColor(float4 _newcol) {
-                this.cubeShader.SurfaceInput.Albedo = _newcol;
-            }
+        public Cube(float3 _scale, float3 _translate, float4 _color, float3 _dims, float _size) {
+            this.cubeTransform = new Transform{Scale = _scale, Translation = _translate};
+            this.cubeMesh = SimpleMeshes.CreateCuboid(_dims);
+            this.cubeShader = MakeEffect.FromDiffuseSpecular(_color, float4.Zero);
+            this.cubeNode = new SceneNode();
+            this.cubeNode.Components.Add(this.cubeTransform);
+            this.cubeNode.Components.Add(this.cubeShader);
+            this.cubeNode.Components.Add(this.cubeMesh);
+            this.size = _size;
+        }
+        public void changeColor(float4 _newcol) {
+            this.cubeShader.SurfaceInput.Albedo = _newcol;
+        }
 
-            public void rotateCube(float _angle) {
-                this.cubeTransform.Rotation.y += _angle;
-            }
+        public void rotateCube(float _angle) {
+            this.cubeTransform.Rotation.y += _angle;
+        }
 
-            public void setTranslate(float _x) {
-                this.cubeTransform.Translation.x = _x;
-            }
+        public void setTranslate(float _x) {
+            this.cubeTransform.Translation.x = _x;
+        }
 
-            public void setScale(float _scale) {
-                this.cubeTransform.Scale.x = _scale;
-            }
-        
+        public void setScale(float _scale) {
+            this.cubeTransform.Scale.x = _scale;
         }
     }
 }
