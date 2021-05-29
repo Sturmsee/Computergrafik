@@ -31,8 +31,15 @@ namespace FuseeApp
             RC.ClearColor = (float4) ColorUint.DarkGreen;
                         
             _scene = new SceneContainer();
-            
 
+            cubes = new Cubes[3];
+            
+            for (var i = 0; i < 3; i++){
+                float edgelength = (i+1) * randomized(1, 3);
+                float3 size = new float3(edgelength);
+                var newcube = new Cube(new float3(1,1,1), new float3(0,randomized(0, 7),0), (float4)ColorUnit.Blue, size, edgelength);
+                cubes[i] = newcube;
+                _scene.Children.Add(cubes[i].cubeNode);
 
             _sceneRenderer = new SceneRendererForward(_scene);
         }
@@ -46,7 +53,12 @@ namespace FuseeApp
 
             _camAngle = _camAngle + 90.0f * M.Pi/180.0f * DeltaTime;
             
+            for (var i = 0; i < cubes.Length; i++){
 
+                cubes[i].rotate((45f * M.Pi/180f) * Time.DeltaTime);
+                cubes[i].setTranslate((float) Math.Cos(2 * Time.TimeSinceStart) * cubes[i].size * 3);
+                cubes[i].setScale(Math.Abs(cubes[i].trans.Translation.x) / (cubes[i].size * 3));
+            }
 
 
             RC.View = float4x4.CreateTranslation(0, 0, 50) * float4x4.CreateRotationY(_camAngle);
@@ -65,6 +77,10 @@ namespace FuseeApp
 
             var projection = float4x4.CreatePerspectiveFieldOfView(M.PiOver4, aspectRatio, 1, 20000);
             RC.Projection = projection;
+        }
+
+        public float randomized(float _num, float _num2) {
+            return Math.Round(random.Next(_num, _num2));
         }        
 
         public class Cube {
