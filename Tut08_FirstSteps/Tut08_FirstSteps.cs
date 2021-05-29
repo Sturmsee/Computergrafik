@@ -29,7 +29,7 @@ namespace FuseeApp
         public override void Init()
         {
             
-            RC.ClearColor = (float4) ColorUint.DarkGreen;
+            RC.ClearColor = (float4) ColorUint.Black;
                         
             _scene = new SceneContainer();
 
