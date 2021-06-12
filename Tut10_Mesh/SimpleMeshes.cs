@@ -137,7 +137,7 @@ namespace FuseeApp
         public static Mesh CreateCylinder(float radius, float height, int segments)
         {
             float3[] verts = new float3[segments + 1];
-            flaot3[] norms = new float3[segments + 1];
+            float3[] norms = new float3[segments + 1];
             ushort[] tris = new ushort[segments * 3];
             float delta = 2 * M.Pi / segments;
 
@@ -158,10 +158,11 @@ namespace FuseeApp
             tris[3 * segments - 2] = (ushort) 0;
             tris[3 * segments - 3] = (ushort) (segments-1);
 
-            return new Mesh {
-                Vertices = verts;
-                Normals = norms;
-                Triangles = tris;
+            return new Mesh 
+            {
+                Vertices = verts,
+                Normals = norms,
+                Triangles = tris,
             };
         }
 
