@@ -138,16 +138,18 @@ namespace FuseeApp
         {
             float3[] verts = new float3[segments + 1];
             float3[] norms = new float3[segments + 1];
+            float3[] sides = new float3[segments + 1];
             ushort[] tris = new ushort[segments * 3];
             float delta = 2 * M.Pi / segments;
 
-            verts[0] = new float3(radius, 0, 0);
+            verts[0] = new float3(radius, 0.5f * height, 0);
             norms[0] = float3.UnitY;
             verts[segments] = float3.Zero;
             norms[segments] = float3.UnitY;
 
             for (int i = 1; i < segments; i++) {
-                verts[i] = new float3(radius * M.Cos(i * delta), 0, radius * M.Sin(i * delta));
+                verts[i] = new float3(radius * M.Cos(i * delta), 0.5f * height, radius * M.Sin(i * delta));
+                sides[i] = new float3(radius * M.Cos(i * delta), height, 0);
                 norms[i] = float3.UnitY;
                 tris[3 * i - 1] = (ushort) segments;
                 tris[3 * i - 2] = (ushort) i;
